@@ -6,15 +6,19 @@ import fs from 'fs/promises';
 
 export default class DownloadService {
 
-    constructor() { }
+    constructor({ytVideoUrl, fileName, filePath}) { 
+        this.ytVideoUrl = ytVideoUrl;
+        this.fileName = fileName;
+        this.filePath = filePath;
+    }
 
-    async downloadAudioFile(url) {
-        const videoFile = 'audio.webm';
-        const mp3File = 'audio.mp3';
+    async downloadAudioFile() {
+        const videoFile = `${this.fileName}.webm`;
+        const mp3File = `${this.fileName}.mp3`;
 
         try {
             // Baixa áudio
-            await youtubedl(url, {
+            await youtubedl(this.ytVideoUrl, {
                 output: videoFile,
                 format: 'bestaudio/best',
             });
