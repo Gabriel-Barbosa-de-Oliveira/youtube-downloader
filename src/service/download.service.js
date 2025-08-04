@@ -13,16 +13,17 @@ export default class DownloadService {
     }
 
     async downloadAudioFile() {
-        const videoFile = `${this.fileName}.webm`;
-        const mp3File = `${this.fileName}.mp3`;
+        const basePath = this.filePath;
+        const videoFile = this._getFormattedFileNameWithBasePath('webm');
+        const mp3File = this._getFormattedFileNameWithBasePath('mp3');
 
         try {
             // Baixa áudio
             await youtubedl(this.ytVideoUrl, {
-                output: videoFile,
+                output: this._getFormattedFileNameWithBasePath('webm'),
                 format: 'bestaudio/best',
             });
-            console.log('✅ Áudio baixado:', videoFile);
+            console.log('✅ File Download:', `${videoFile}`);
 
             // Converte para MP3 com bitrate 320 kbps e frequência 48kHz
             await new Promise((resolve, reject) => {
@@ -31,18 +32,24 @@ export default class DownloadService {
                         reject(error);
                         return;
                     }
-                    console.log('✅ Conversão para mp3 (qualidade máxima) concluída:', mp3File);
+                    console.log('✅ Mp3 conversion successfull:', `${mp3File}`);
                     resolve();
                 });
             });
 
             // Remove arquivo temporário
-            await fs.unlink(videoFile);
-            console.log('🗑️ Arquivo temporário removido:', videoFile);
+            await fs.unlink(`${videoFile}`);
+            console.log('🗑️ Temp File removed:', `${videoFile}`);
 
         } catch (err) {
-            console.error('❌ Erro:', err);
+            console.error('❌ Error:', err);
         }
+    }
+
+    _getFormattedFileNameWithBasePath(extension = 'mp3') {
+        const basePath = this.filePath;
+        const fileName = `${this.fileName}.${extension}`;
+        return `${basePath}/${fileName}`;
     }
 }
 
