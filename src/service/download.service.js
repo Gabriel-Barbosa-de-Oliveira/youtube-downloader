@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 
 export default class DownloadService {
 
-    constructor({ytVideoUrl, fileName, filePath}) { 
+    constructor(ytVideoUrl, fileName, filePath) { 
         this.ytVideoUrl = ytVideoUrl;
         this.fileName = fileName;
         this.filePath = filePath;
