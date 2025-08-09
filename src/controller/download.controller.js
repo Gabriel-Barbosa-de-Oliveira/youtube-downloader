@@ -1,5 +1,6 @@
 import DownloadService from "../service/download.service.js";
 import { statusCodes } from "../utils/httpStatusCode.js";
+import { hasCompleteObject } from "../utils/objectChecker.js";
 
 
 export default class DownloadController {
@@ -9,16 +10,16 @@ export default class DownloadController {
         let data;
 
         try {
-            data = JSON.parse(body);
+            data = JSON.parse(body); 
             const { fileName, filePath, ytVideoUrl } = data;
-            if (!fileName || !filePath || !ytVideoUrl) {
+            if (!hasCompleteObject(data)) {
                 response.writeHead(statusCodes.BAD_REQUEST);
                 response.end("Missing required fields: fileName, filePath, ytVideoUrl");
                 return;
             }
 
             const downloadService = new DownloadService(ytVideoUrl,fileName, filePath);
-
+ 
             // Example usage of the download service 
             await downloadService.downloadAudioFile();
             response.writeHead(statusCodes.OK);

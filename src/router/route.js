@@ -1,5 +1,5 @@
-import DownloadController from './controller/download.controller.js';
-import { statusCodes } from './utils/httpStatusCode.js';
+import DownloadController from '../controller/download.controller.js';
+import { statusCodes } from '../utils/httpStatusCode.js';
 
 export async function Router(request, response) {
 

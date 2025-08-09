@@ -6,14 +6,13 @@ import fs from 'fs/promises';
 
 export default class DownloadService {
 
-    constructor(ytVideoUrl, fileName, filePath) { 
+    constructor(ytVideoUrl, fileName, filePath) {
         this.ytVideoUrl = ytVideoUrl;
         this.fileName = fileName;
         this.filePath = filePath;
     }
 
     async downloadAudioFile() {
-        const basePath = this.filePath;
         const videoFile = this._getFormattedFileNameWithBasePath('webm');
         const mp3File = this._getFormattedFileNameWithBasePath('mp3');
 
