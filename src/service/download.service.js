@@ -3,13 +3,15 @@ import youtubedl from 'youtube-dl-exec';
 import ffmpegPath from 'ffmpeg-static';
 import { exec } from 'child_process';
 import fs from 'fs/promises';
+import { encodeToUTF8 } from '../utils/encoder.js';
 
 export default class DownloadService {
 
     constructor(ytVideoUrl, fileName, filePath) {
         this.ytVideoUrl = ytVideoUrl;
-        this.fileName = fileName;
-        this.filePath = filePath;
+        // Ensure fileName and filePath are UTF-8 encoded strings
+        this.fileName = encodeToUTF8(fileName);
+        this.filePath = encodeToUTF8(filePath);
     }
 
     async downloadAudioFile() {
