@@ -1,62 +1,93 @@
-// import { Router } from "./route";
-// import jest from 'jest-mock';
+// __tests__/router.test.js
+import { jest } from '@jest/globals';
+import { statusCodes } from '../utils/httpStatusCode.js';
 
-// // router.test.js
+// 1️⃣ Mock DownloadController BEFORE importing Router
+const mockHandleDownloadRequest = jest.fn();
 
-// describe("Router", () => {
-//     let router;
-//     const mockRequest = {
-//         body: {
-//             name: 'Test User'
-//         },
-//         params: {
-//             id: '123'
-//         },
-//         // Add other properties as needed
-//     };
+jest.unstable_mockModule('../controller/download.controller.js', () => ({
+  default: jest.fn().mockImplementation(() => ({
+    handleDownloadRequest: mockHandleDownloadRequest
+  }))
+}));
 
-//     const mockResponse = {
-//         status: jest.fn().mockReturnThis(), // Allows chaining like res.status(200).send(...)
-//         send: jest.fn(),
-//         json: jest.fn(),
-//         // Add other methods as needed
-//     };
+// 2️⃣ Now dynamically import Router (it will use the mocked DownloadController)
+const { Router } = await import('./route.js');
+const { default: DownloadController } = await import('../controller/download.controller.js');
 
-//     beforeEach(() => {
-//         router = Router(mockRequest, mockResponse);
-//     });
+function createMockReqRes({ url = '/', method = 'GET', body = '' } = {}) {
+  const req = {
+    url,
+    method,
+    on: jest.fn((event, callback) => {
+      if (event === 'data' && body) {
+        callback(Buffer.from(body));
+      }
+      if (event === 'end') {
+        callback();
+      }
+      return req;
+    }),
+  };
 
-//     test("should instantiate Router", () => {
-//         expect(router).toBeInstanceOf(Router);
-//     });
+  const res = {
+    writeHead: jest.fn(),
+    end: jest.fn(),
+  };
 
-//     test("should add a route", () => {
-//         const handler = jest.fn();
-//         router.addRoute("/test", handler);
-//         expect(router.routes["/test"]).toBe(handler);
-//     });
+  return { req, res };
+}
 
-//     test("should call the correct handler for a route", () => {
-//         const handler = jest.fn();
-//         router.addRoute("/call", handler);
-//         router.handle("/call");
-//         expect(handler).toHaveBeenCalled();
-//     });
+describe('Router', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-//     test("should not call handler for unknown route", () => {
-//         const handler = jest.fn();
-//         router.addRoute("/known", handler);
-//         router.handle("/unknown");
-//         expect(handler).not.toHaveBeenCalled();
-//     });
+  it('should return BAD_REQUEST when no body is provided', async () => {
+    const { req, res } = createMockReqRes({ url: '/download', method: 'POST', body: '' });
 
-//     test("should overwrite handler if route is added twice", () => {
-//         const handler1 = jest.fn();
-//         const handler2 = jest.fn();
-//         router.addRoute("/dup", handler1);
-//         router.addRoute("/dup", handler2);
-//         router.handle("/dup");
-//         expect(handler1).not.toHaveBeenCalled();
-//         expect(handler2).toHaveBeenCalled();
-//     });
-// });
+    await Router(req, res);
+
+    expect(res.writeHead).toHaveBeenCalledWith(statusCodes.BAD_REQUEST);
+    expect(res.end).toHaveBeenCalledWith('No data provided');
+  });
+
+  it('should return METHOD_NOT_ALLOWED when method is not POST for /download', async () => {
+    const { req, res } = createMockReqRes({ url: '/download', method: 'GET', body: 'data' });
+
+    await Router(req, res);
+
+    expect(res.writeHead).toHaveBeenCalledWith(statusCodes.METHOD_NOT_ALLOWED);
+    expect(res.end).toHaveBeenCalledWith('Method not allowed');
+  });
+
+  it('should call handleDownloadRequest on POST /download', async () => {
+    const { req, res } = createMockReqRes({ url: '/download', method: 'POST', body: 'videoId=123' });
+
+    await Router(req, res);
+
+    expect(mockHandleDownloadRequest).toHaveBeenCalledWith('videoId=123', res);
+  });
+
+  it('should handle errors from handleDownloadRequest', async () => {
+    mockHandleDownloadRequest.mockRejectedValueOnce(new Error('fail'));
+
+    const { req, res } = createMockReqRes({ url: '/download', method: 'POST', body: 'videoId=123' });
+
+    await Router(req, res);
+
+    expect(res.writeHead).toHaveBeenCalledWith(statusCodes.INTERNAL_SERVER_ERROR);
+    expect(res.end).toHaveBeenCalledWith(
+      'Error processing the download request, please contact adminstrator.'
+    );
+  });
+
+  it('should return NOT_FOUND for unknown routes', async () => {
+    const { req, res } = createMockReqRes({ url: '/unknown', method: 'GET', body: 'data' });
+
+    await Router(req, res);
+
+    expect(res.writeHead).toHaveBeenCalledWith(statusCodes.NOT_FOUND);
+    expect(res.end).toHaveBeenCalledWith('Route not found');
+  });
+});
