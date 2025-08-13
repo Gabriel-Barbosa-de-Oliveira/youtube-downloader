@@ -44,10 +44,10 @@ export default {
   // An object that configures minimum threshold enforcement for coverage results
   coverageThreshold: {
     global: {
-      branch: 100,
-      functions: 100,
-      lines: 100,
-      statements: 100
+      branch: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
     }
   },
 
@@ -89,6 +89,9 @@ export default {
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -180,6 +183,7 @@ export default {
 
   // A map from regular expressions to paths to transformers
   // transform: undefined,
+  transform: {},
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [

@@ -7,8 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand --watch --config ./jest.config.js",
-    "test:cov": "NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.config.js --coverage"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --runInBand --watch --config ./jest.config.mjs",
+    "test:cov": "NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.config.mjs --coverage"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0",
